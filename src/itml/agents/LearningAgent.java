@@ -72,6 +72,7 @@ public class LearningAgent extends Agent {
 	public Classifier learn(Instances instances) {
 		try {
 			this.instances = instances;
+			String s = "Testing commit0";
 			instances.setClassIndex(instances.numAttributes() - 1);
 			//System.out.println(instances.toString());
 			classifier_.buildClassifier(instances);
