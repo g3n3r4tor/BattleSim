@@ -46,14 +46,14 @@ public class LearningAgent extends Agent {
 		double[] values = new double[8];
 		StateAgent a = stateBattle.getAgentState(m_noThisAgent);
 		StateAgent o = stateBattle.getAgentState(m_noOpponentAgent);
-		values[0] = a.getCol();
-		values[1] = a.getRow();
-		values[2] = a.getHealthPoints();
-		values[3] = a.getStaminaPoints();
-		values[4] = o.getCol();
-		values[5] = o.getRow();
-		values[6] = o.getHealthPoints();
-		values[7] = o.getStaminaPoints();
+		values[0] = o.getCol();
+		values[1] = o.getRow();
+		values[2] = o.getHealthPoints();
+		values[3] = o.getStaminaPoints();
+		values[4] = a.getCol();
+		values[5] = a.getRow();
+		values[6] = a.getHealthPoints();
+		values[7] = a.getStaminaPoints();
 		try {
 			if(a.getStaminaPoints() == 0) {
 				return new CardRest();
@@ -66,15 +66,16 @@ public class LearningAgent extends Agent {
 			int out = (int)classifier_.classifyInstance(instance);
 			Card selected = allCards.get(out);
 			if(cards.contains(selected)) {
+				if(selected.getType() == Card.CardActionType.ctMove) {
+					return new CardRest();
+				}
 				if(selected.getType() == Card.CardActionType.ctDefend) {
 					return new CardRest();
 				}
 				if(selected.getType() == Card.CardActionType.ctAttack) {
 					return new CardDefend();
 				}
-				if(selected.getType() == Card.CardActionType.ctMove) {
-					return new CardRest();
-				}
+
 				return selected;
 			}
 
