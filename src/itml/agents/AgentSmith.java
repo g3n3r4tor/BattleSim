@@ -12,6 +12,7 @@ import weka.classifiers.trees.J48;
 import weka.core.Instance;
 import weka.core.Instances;
 
+import javax.swing.plaf.nimbus.State;
 import java.util.ArrayList;
 
 /**
@@ -45,6 +46,7 @@ public class AgentSmith extends Agent {
         double[] values = new double[8];
         StateAgent a = stateBattle.getAgentState(m_noThisAgent);
         StateAgent o = stateBattle.getAgentState(m_noOpponentAgent);
+        //System.out.println(stateBattle.toString());
         values[0] = o.getCol();
         values[1] = o.getRow();
         values[2] = o.getHealthPoints();
@@ -63,6 +65,7 @@ public class AgentSmith extends Agent {
             Instance instance = new Instance(1.0, values.clone());
             instance.setDataset(instances);
             int out = (int)classifier_.classifyInstance(instance);
+
             Card selected = allCards.get(out);
             if(cards.contains(selected)) {
                 //simulate opponenet's move.
@@ -84,7 +87,7 @@ public class AgentSmith extends Agent {
                                 return card;
                             }
                         }
-                        else if (a.getStaminaPoints() < a.MAX_STAMINA) {
+                        else if (a.getStaminaPoints() < StateAgent.MAX_STAMINA) {
                             return new CardRest();
 
                         }
@@ -104,10 +107,11 @@ public class AgentSmith extends Agent {
 
                 if(selected.getType() == Card.CardActionType.ctAttack) {
                     Card bestCard = new CardRest();
+
                     for ( Card card : cards ) {
                         StateBattle bs = (StateBattle) stateBattle.clone();
                         if(selected.inAttackRange(o.getCol(), o.getRow() , a.getCol(), a.getRow())) {
-                            if(a.getHealthPoints() < o.getHealthPoints()) {
+                            if(a.getHealthPoints() <= o.getHealthPoints()) {
                                 if (card.getType() == Card.CardActionType.ctMove) {
                                     int tmp = a.getHealthPoints();
                                     move[m_noThisAgent] = card;
@@ -123,16 +127,19 @@ public class AgentSmith extends Agent {
                                 return selected;
                             }
                         }
-                        else if(a.getStaminaPoints() < a.MAX_STAMINA){
+                        else if(a.getStaminaPoints() < StateAgent.MAX_STAMINA){
                             return new CardRest();
                         }
                         else {
-                            //run away
+                            //maybe terminate mode here
                         }
 
                     }
                     if(bestCard.getName().equals("cRest")) {
                         return new CardDefend();
+                    }
+                    else {
+                        return bestCard;
                     }
                 }
                 if(selected.getType() == Card.CardActionType.ctDefend) {

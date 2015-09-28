@@ -1,11 +1,15 @@
 Strategy for BattleSim:
 
 
-If enemy moves = attack if within range?
-if attack not within range and stamina not full = rest
-If enemy attacks and your health is lower = dodge.
-If you cannot dodge = defend.
-if enemy attacks and your health is higher = attack back. 
-If enemy rests and you are in range = attack.
-If enemy defends = rest.
+//If enemy moves = attack if within range?
+//if attack not within range and stamina not full = rest
+
+//If enemy attacks and is in range and your health is lower = dodge.
+//If enemy attacks and is in range and you cannot dodge = defend.
+//if enemy attacks and is in range and your health is higher or equal = attack back. 
+
+//if enemy attacks and is not in range and stamina not full = rest
+
+//If enemy rests and you are in range = attack.
+//If enemy defends = rest.
 If stamina < move u want to do = rest.
