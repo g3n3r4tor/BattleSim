@@ -8,6 +8,7 @@ import itml.simulator.StateAgent;
 import itml.simulator.StateBattle;
 import weka.classifiers.Classifier;
 import weka.classifiers.functions.MultilayerPerceptron;
+import weka.classifiers.trees.J48;
 import weka.core.Instance;
 import weka.core.Instances;
 
@@ -23,7 +24,7 @@ public class AgentSmith extends Agent {
     private Instances instances;
     public AgentSmith(CardDeck deck, int msConstruct, int msPerMove, int msLearn) {
         super(deck, msConstruct, msPerMove, msLearn);
-        classifier_= new MultilayerPerceptron();
+        classifier_= new J48();
     }
 
 
@@ -64,17 +65,80 @@ public class AgentSmith extends Agent {
             int out = (int)classifier_.classifyInstance(instance);
             Card selected = allCards.get(out);
             if(cards.contains(selected)) {
+                //simulate opponenet's move.
+                Card [] move = new Card[2];
+                move[m_noOpponentAgent] = selected;
+
+                //if opponent moves
                 if(selected.getType() == Card.CardActionType.ctMove) {
-                    return new CardRest();
+                    // First check to see if we would be in attack range, if so attack.
+                    int minDistance = calcDistanceBetweenAgents(stateBattle);
+                    Card bestCard = new CardRest();
+                    for ( Card card : cards ) {
+                        StateBattle bs = (StateBattle) stateBattle.clone();
+                        if (card.getType() == Card.CardActionType.ctAttack) {
+                            int tmp = o.getHealthPoints();
+                            move[m_noThisAgent] = card;
+                            bs.play( move );
+                            if(bs.getAgentState(m_noOpponentAgent).getHealthPoints() < tmp) {
+                                return card;
+                            }
+                        }
+                        else if (a.getStaminaPoints() < a.MAX_STAMINA) {
+                            return new CardRest();
+
+                        }
+                        else {
+                            move[m_noThisAgent] = card;
+                            bs.play( move );
+                            int  distance = calcDistanceBetweenAgents( bs );
+                            if ( distance > minDistance ) {
+                                bestCard = card;
+                                minDistance = distance;
+                            }
+                        }
+
+                    }
+                    return bestCard;
+                }
+
+                if(selected.getType() == Card.CardActionType.ctAttack) {
+                    Card bestCard = new CardRest();
+                    for ( Card card : cards ) {
+                        StateBattle bs = (StateBattle) stateBattle.clone();
+                        if(selected.inAttackRange(o.getCol(), o.getRow() , a.getCol(), a.getRow())) {
+                            if(a.getHealthPoints() < o.getHealthPoints()) {
+                                if (card.getType() == Card.CardActionType.ctMove) {
+                                    int tmp = a.getHealthPoints();
+                                    move[m_noThisAgent] = card;
+                                    bs.play( move );
+                                    if(bs.getAgentState(m_noThisAgent).getHealthPoints() == tmp) {
+                                        bestCard = card;
+                                    }
+
+                                }
+                                move[m_noThisAgent] = card;
+                            }
+                            else {
+                                return selected;
+                            }
+                        }
+                        else if(a.getStaminaPoints() < a.MAX_STAMINA){
+                            return new CardRest();
+                        }
+                        else {
+                            //run away
+                        }
+
+                    }
+                    if(bestCard.getName().equals("cRest")) {
+                        return new CardDefend();
+                    }
                 }
                 if(selected.getType() == Card.CardActionType.ctDefend) {
                     return new CardRest();
                 }
-                if(selected.getType() == Card.CardActionType.ctAttack) {
-                    return new CardDefend();
-                }
-
-                return selected;
+                return new CardRest();
             }
 
         } catch (Exception e) {
@@ -95,5 +159,13 @@ public class AgentSmith extends Agent {
             System.out.println("Error training classifier: " + e.toString());
         }
         return classifier_;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    private int calcDistanceBetweenAgents( StateBattle bs ) {
+
+        StateAgent asFirst = bs.getAgentState( 0 );
+        StateAgent asSecond = bs.getAgentState( 1 );
+
+        return Math.abs( asFirst.getCol() - asSecond.getCol() ) + Math.abs( asFirst.getRow() - asSecond.getRow() );
     }
 }
