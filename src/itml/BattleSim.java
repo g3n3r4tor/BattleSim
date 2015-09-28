@@ -211,7 +211,7 @@ public class BattleSim {
                     values[5] = o.getRow();
                     values[6] = o.getHealthPoints();
                     values[7] = o.getStaminaPoints();
-                    values[8] = instances.attribute(8).indexOfValue( bs.getLastMoves()[indexA].getName() ); // move of agent.
+                    values[8] = instances.attribute(8).indexOfValue(bs.getLastMoves()[indexA].getName()); // move of agent.
                     instances.add( new Instance( 1.0, values.clone() ) );
                 }
                 a = bs.getAgentState(indexA);

@@ -1,11 +1,13 @@
 package itml.agents;
 
 import itml.cards.Card;
+import itml.cards.CardDefend;
 import itml.cards.CardRest;
 import itml.simulator.CardDeck;
 import itml.simulator.StateAgent;
 import itml.simulator.StateBattle;
 import weka.classifiers.Classifier;
+import weka.classifiers.functions.MultilayerPerceptron;
 import weka.classifiers.trees.J48;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -18,12 +20,13 @@ import java.util.ArrayList;
  */
 public class LearningAgent extends Agent {
 	private int m_noThisAgent;     // Index of our agent (0 or 1).
-	private int m_noOpponentAgent; // Inex of opponent's agent.
+	private int m_noOpponentAgent; // Index of opponent's agent.
 	private Classifier classifier_;
 	private Instances instances;
 	public LearningAgent( CardDeck deck, int msConstruct, int msPerMove, int msLearn ) {
 		super(deck, msConstruct, msPerMove, msLearn);
-		classifier_ = new J48();
+		//classifier_ = new J48();
+		classifier_ = new MultilayerPerceptron();
 	}
 
 	@Override
@@ -41,8 +44,8 @@ public class LearningAgent extends Agent {
 	@Override
 	public Card act(StateBattle stateBattle) {
 		double[] values = new double[8];
-		StateAgent a = stateBattle.getAgentState(0);
-		StateAgent o = stateBattle.getAgentState(1);
+		StateAgent a = stateBattle.getAgentState(m_noThisAgent);
+		StateAgent o = stateBattle.getAgentState(m_noOpponentAgent);
 		values[0] = a.getCol();
 		values[1] = a.getRow();
 		values[2] = a.getHealthPoints();
@@ -52,6 +55,9 @@ public class LearningAgent extends Agent {
 		values[6] = o.getHealthPoints();
 		values[7] = o.getStaminaPoints();
 		try {
+			if(a.getStaminaPoints() == 0) {
+				return new CardRest();
+			}
 			ArrayList<Card> allCards = m_deck.getCards();
 			ArrayList<Card> cards = m_deck.getCards(a.getStaminaPoints());
 			//System.out.println(classifier_.toString());
@@ -60,8 +66,18 @@ public class LearningAgent extends Agent {
 			int out = (int)classifier_.classifyInstance(instance);
 			Card selected = allCards.get(out);
 			if(cards.contains(selected)) {
+				if(selected.getType() == Card.CardActionType.ctDefend) {
+					return new CardRest();
+				}
+				if(selected.getType() == Card.CardActionType.ctAttack) {
+					return new CardDefend();
+				}
+				if(selected.getType() == Card.CardActionType.ctMove) {
+					return new CardRest();
+				}
 				return selected;
 			}
+
 		} catch (Exception e) {
 			System.out.println("Error classifying new instance: " + e.toString());
 		}
@@ -72,7 +88,6 @@ public class LearningAgent extends Agent {
 	public Classifier learn(Instances instances) {
 		try {
 			this.instances = instances;
-			String s = "Testing commit0";
 			instances.setClassIndex(instances.numAttributes() - 1);
 			//System.out.println(instances.toString());
 			classifier_.buildClassifier(instances);
