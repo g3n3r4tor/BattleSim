@@ -14,6 +14,7 @@ import weka.core.Instances;
 
 import javax.swing.plaf.nimbus.State;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Created by Lenovo on 28.9.2015.
@@ -55,18 +56,29 @@ public class AgentSmith extends Agent {
         values[5] = a.getRow();
         values[6] = a.getHealthPoints();
         values[7] = a.getStaminaPoints();
+
+        Instance instance = new Instance(1.0, values.clone());
+        instance.setDataset(instances);
+        ArrayList<Card> oCards = m_deck.getCards(o.getStaminaPoints());
+        ArrayList<Card> allCards = m_deck.getCards();
+        ArrayList<Card> cards = m_deck.getCards(a.getStaminaPoints());
+        int out = 0;
+        Card selected;
+        try {
+            out = (int)classifier_.classifyInstance(instance);
+            selected = allCards.get(out);
+        } catch (Exception e) {
+            Random rnd = new Random();
+            out = rnd.nextInt(oCards.size());
+            selected = oCards.get(out);
+        }
         try {
             if(a.getStaminaPoints() == 0) {
                 return new CardRest();
             }
-            ArrayList<Card> allCards = m_deck.getCards();
-            ArrayList<Card> cards = m_deck.getCards(a.getStaminaPoints());
-            //System.out.println(classifier_.toString());
-            Instance instance = new Instance(1.0, values.clone());
-            instance.setDataset(instances);
-            int out = (int)classifier_.classifyInstance(instance);
 
-            Card selected = allCards.get(out);
+            //System.out.println(classifier_.toString());
+
             if(cards.contains(selected)) {
                 //simulate opponenet's move.
                 Card [] move = new Card[2];

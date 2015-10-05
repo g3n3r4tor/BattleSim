@@ -39,7 +39,7 @@ public class BattleSim {
         int numTrainingGames = 1000;     // Number of games to play in the training phase.
         int numPlayingGames  = 100;    // Number of games to play in the evaluation phase.
         int msConstruct      = 5000;   // Maximum time to use in Agent constructor (in ms.)
-        int msPerMove        = 50;     // Maximum time to use per act, startGame, endGame call.
+        int msPerMove        = 100;     // Maximum time to use per act, startGame, endGame call.
         int msLearning       = 300000;  // Maximum time to use in the learning call.
 
         // Check if any command line arguments
@@ -92,7 +92,7 @@ public class BattleSim {
         }
 
         msStart = System.currentTimeMillis();
-        Agent agentOpp = new AgentTerminator( deck.clone(), msConstruct, msPerMove, msLearning );   // The second agent is your opponent.
+        Agent agentOpp = new AgentSmith( deck.clone(), msConstruct, msPerMove, msLearning );   // The second agent is your opponent.
         msDuration = System.currentTimeMillis() - msStart;
         System.out.println("Timing agent constructor = " + msDuration );
         if ( msDuration > msConstruct ) {
